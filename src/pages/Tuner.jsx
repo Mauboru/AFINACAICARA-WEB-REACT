@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import * as pitchy from "pitchy";
+import styled from "styled-components";
 
 export default function Tuner() {
     const notes = [
@@ -9,8 +10,12 @@ export default function Tuner() {
         { name: "E", freq: 659.26, file: "/sounds/E5.mp3" }
     ];
 
+    const instruments = ["Rabeca", "Machete", "Viola", "Meia-Viola"];
+
     const [detectedNote, setDetectedNote] = useState("");
     const [offset, setOffset] = useState(0);
+    const [instrument, setInstrument] = useState("Rabeca");
+
     const audioContextRef = useRef(null);
     const analyserNodeRef = useRef(null);
     const dataArrayRef = useRef(null);
@@ -74,42 +79,165 @@ export default function Tuner() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center px-4 py-6 bg-gray-100">
-            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 text-center">
-                <h1 className="text-2xl font-semibold mb-4">Afinador de Violino</h1>
+        <Styled.Page>
+            <Styled.ResponsiveSidebar>
+                {instruments.map((item) => (
+                    <Styled.InstrumentButton
+                        key={item}
+                        onClick={() => setInstrument(item)}
+                        active={instrument === item}
+                    >
+                        {item}
+                    </Styled.InstrumentButton>
+                ))}
 
-                <p className="text-lg mb-2">Nota detectada:</p>
-                <div className="text-4xl font-bold text-blue-700 h-10 mb-4">
-                    {detectedNote || "..."}
-                </div>
-
-                <div className="relative h-2 w-full bg-gray-300 rounded-full mb-2">
-                    <div
-                        className={`absolute top-0 h-2 w-1 transition-all duration-100 ${
-                            Math.abs(offset) < 5 ? "bg-green-500" : "bg-red-600"
-                        }`}
-                        style={{
-                            left: `calc(50% + ${offset * 1.2}px)`, // amplifica visualmente
-                        }}
-                    />
-                    <div className="absolute top-0 left-1/2 w-0.5 h-2 bg-black" />
-                </div>
-                <p className="text-sm text-gray-500 mb-6">
-                    Desvio: {offset.toFixed(2)} cent
-                </p>
-
-                <div className="grid grid-cols-2 gap-3">
-                    {notes.map(note => (
-                        <button
-                            key={note.name}
-                            onClick={() => playNote(note.file)}
-                            className="bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Tocar {note.name}
-                        </button>
+                <Styled.Logo src="/logo.png" alt="Mandicuera" />
+            </Styled.ResponsiveSidebar>
+    
+            <Styled.Container>
+                <Styled.Title>Afinador de {instrument}</Styled.Title>
+    
+                <Styled.NoteDisplay>
+                    Nota detectada: <strong>{detectedNote || "..."}</strong>
+                </Styled.NoteDisplay>
+    
+                <Styled.OffsetBar>
+                    <Styled.Indicator style={{ left: `${offset + 50}%` }} />
+                </Styled.OffsetBar>
+    
+                <Styled.Buttons>
+                    {notes.map((note) => (
+                        <Styled.NoteButton key={note.name} onClick={() => playNote(note.file)}>
+                            {note.name}
+                        </Styled.NoteButton>
                     ))}
-                </div>
-            </div>
-        </div>
+                </Styled.Buttons>
+            </Styled.Container>
+        </Styled.Page>
     );
 }
+const Styled = {
+    Page: styled.div`
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+        background: ${({ theme }) => theme.colors.background};
+        font-family: Arial, sans-serif;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+    `,
+    ResponsiveSidebar: styled.div`
+        width: 200px;
+        background: ${({ theme }) => theme.colors.primaryDarkTwo};
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        @media (max-width: 768px) {
+            width: 100%;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px;
+        }
+    `,
+    InstrumentButton: styled.button`
+        background: ${({ active, theme }) =>
+            active ? theme.colors.primary : theme.colors.primaryDark};
+        color: ${({ theme }) => theme.colors.text};
+        border: none;
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+
+        &:hover {
+            background: ${({ theme }) => theme.colors.primary};
+        }
+
+        @media (max-width: 768px) {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+    `,
+    Logo: styled.img`
+        height: 180px;
+        margin-left: auto;
+
+        @media (max-width: 768px) {
+            order: 99;
+            margin-left: 0;
+            margin-top: 10px;
+        }
+    `,
+    Container: styled.div`
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+
+        @media (max-width: 768px) {
+            padding: 20px;
+        }
+    `,
+    Title: styled.h1`
+        font-size: 2rem;
+        color: ${({ theme }) => theme.colors.text};
+        margin-bottom: 20px;
+        text-align: center;
+    `,
+    NoteDisplay: styled.div`
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: ${({ theme }) => theme.colors.text};
+        text-align: center;
+    `,
+    OffsetBar: styled.div`
+        width: 100%;
+        max-width: 400px;
+        height: 10px;
+        background: ${({ theme }) => theme.colors.primaryTransparent2};
+        position: relative;
+        margin-bottom: 30px;
+        border-radius: 5px;
+    `,
+    Indicator: styled.div`
+        position: absolute;
+        top: -5px;
+        width: 4px;
+        height: 20px;
+        background: ${({ theme }) => theme.colors.primary};
+        transition: left 0.1s ease;
+    `,
+    Buttons: styled.div`
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    `,
+    NoteButton: styled.button`
+        background: ${({ theme }) => theme.colors.primary};
+        color: ${({ theme }) => theme.colors.text};
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: ${({ theme }) => theme.colors.primaryDark};
+        }
+
+        @media (max-width: 768px) {
+            padding: 10px 16px;
+            font-size: 0.95rem;
+        }
+    `
+};

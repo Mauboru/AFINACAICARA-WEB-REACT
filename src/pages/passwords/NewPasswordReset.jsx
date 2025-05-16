@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styled from 'styled-components';
 import logo from "/logomarca.png";
-import { sendNewPassword } from "../services/auth";
-import { CustomModal, PasswordInput, CustomButton } from "../components";
+import { sendNewPassword } from "../../services/auth";
+import { CustomModal, PasswordInput, CustomButton } from "../../components";
 import backgroundImg from "/fundo.png";
 import { useParams } from 'react-router-dom';
 

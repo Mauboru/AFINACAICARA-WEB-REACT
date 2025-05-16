@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import logo from "/logomarca.png";
-import { sendEmailReset } from "../services/auth";
+import { sendEmailReset } from "../../services/auth";
 import styled from 'styled-components';
-import { CustomModal, CustomInput, CustomButton, CustomLink } from "../components";
+import { CustomModal, CustomInput, CustomButton, CustomLink } from "../../components";
 import backgroundImg from "/fundo.png";
 
 export default function ResetPassword() {
