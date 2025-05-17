@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Tuner from "../pages/Tuner";
+import Metronomo from "../pages/Metronomo";
 
 export default function AppRoutes() {
     return (
@@ -7,6 +8,7 @@ export default function AppRoutes() {
             <Routes>
                 {/* Login público */}
                 <Route path="/" element={<Tuner />} />
+                <Route path="/metronomo" element={<Metronomo />} />
                 {/* <Route path="~/register" element={<RegisterUser />} />
                 <Route path="~/reset-password" element={<ResetPassword />} />
                 <Route path="~/reset-password/:token" element={<NewPasswordReset />} />

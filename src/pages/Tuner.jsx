@@ -1,11 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 export default function Tuner() {
   const chromaticNotes = [
     "C", "C#", "D", "D#", "E", "F",
     "F#", "G", "G#", "A", "A#", "B"
   ];
+
+  const navigate = useNavigate();
 
   const instrumentNotesMap = {
     Rabeca: [
@@ -57,12 +60,12 @@ export default function Tuner() {
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    oscillator.type = "sine"; // tipo de onda: sine, square, sawtooth, triangle
+    oscillator.type = "sine";
     oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
-    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // volume baixo
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
     oscillator.start();
 
     oscillator.stop(audioCtx.currentTime + duration);
@@ -227,10 +230,13 @@ export default function Tuner() {
             {item}
           </Styled.InstrumentButton>
         ))}
-        <Styled.Logo src="/logo.png" alt="Mandicuera" />
+        <Styled.InstrumentButton onClick={() => navigate("/metronomo")}>
+          Metrônomo
+        </Styled.InstrumentButton>
       </Styled.ResponsiveSidebar>
 
       <Styled.Container>
+        <Styled.Logo src="/logo.png" alt="Mandicuera" />
         <Styled.Title>Afinador de {instrument}</Styled.Title>
 
         <Styled.NoteDisplay color={getOffsetColor(offset)}>
@@ -316,27 +322,26 @@ const Styled = {
   `,
 
   Logo: styled.img`
-      height: 180px;
-      margin-left: auto;
+    height: 180px;
 
-      @media (max-width: 768px) {
-          order: 99;
-          margin-left: 0;
-          margin-top: 10px;
-      }
+    @media (max-width: 768px) {
+        order: 99;
+        margin-left: 0;
+        margin-top: 10px;
+    }
   `,
 
   Container: styled.div`
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
 
-      @media (max-width: 768px) {
-          padding: 20px;
-      }
+    @media (max-width: 768px) {
+        padding: 20px;
+    }
   `,
 
   Title: styled.h1`
@@ -354,48 +359,53 @@ const Styled = {
   `,
 
   OffsetBar: styled.div`
-      width: 100%;
-      max-width: 400px;
-      height: 10px;
-      background: ${({ theme }) => theme.colors.primaryTransparent2};
-      position: relative;
-      margin-bottom: 30px;
-      border-radius: 5px;
+    width: 100%;
+    max-width: 400px;
+    height: 10px;
+    background: ${({ theme }) => theme.colors.primaryTransparent2};
+    position: relative;
+    margin-bottom: 30px;
+    border-radius: 5px;
   `,
 
   Indicator: styled.div`
-      position: absolute;
-      top: -5px;
-      width: 4px;
-      height: 20px;
-      background: ${({ theme }) => theme.colors.primary};
-      transition: left 0.1s ease;
+    position: absolute;
+    top: -5px;
+    width: 4px;
+    height: 20px;
+    background: ${({ theme }) => theme.colors.primary};
+    transition: left 0.1s ease;
   `,
 
   Buttons: styled.div`
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
   `,
 
   NoteButton: styled.button`
-      background: ${({ theme }) => theme.colors.primary};
-      color: ${({ theme }) => theme.colors.text};
-      border: none;
-      padding: 12px 20px;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s ease;
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.text};
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    min-width: 70px;
+    text-align: center;
 
-      &:hover {
-          background: ${({ theme }) => theme.colors.primaryDark};
-      }
+    &:hover {
+      background: ${({ theme }) => theme.colors.primaryDark};
+    }
 
-      @media (max-width: 768px) {
-          padding: 10px 16px;
-          font-size: 0.95rem;
-      }
+    @media (max-width: 768px) {
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      flex: 1 1 80px;
+      max-width: 100px;
+    }
   `
 };
