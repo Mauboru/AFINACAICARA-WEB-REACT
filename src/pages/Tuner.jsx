@@ -1,14 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import MainLayout from '../layouts/MainLayout';
 
 export default function Tuner() {
   const chromaticNotes = [
     "C", "C#", "D", "D#", "E", "F",
     "F#", "G", "G#", "A", "A#", "B"
   ];
-
-  const navigate = useNavigate();
 
   const instrumentNotesMap = {
     Rabeca: [
@@ -219,8 +217,28 @@ export default function Tuner() {
   };
 
   return (
-    <Styled.Page>
-      <Styled.ResponsiveSidebar>
+    <MainLayout>
+
+        <Styled.Container>
+          <Styled.Title>Afinador de {instrument}</Styled.Title>
+
+          <Styled.NoteDisplay color={getOffsetColor(offset)}>
+            Nota detectada: <strong>{detectedNote || "..."}</strong>
+          </Styled.NoteDisplay>
+
+          <Styled.OffsetBar>
+            <Styled.Indicator style={{ left: `${offset + 50}%`, backgroundColor: getOffsetColor(offset) }} />
+            <Styled.CenterLine />
+          </Styled.OffsetBar>
+
+          <Styled.Buttons>
+            {instrumentNotesMap[instrument].map((note, idx) => (
+              <Styled.NoteButton key={`${instrument}-${note.name}-${idx}`} onClick={() => playNote(note)}>
+                {note.name}
+              </Styled.NoteButton>
+            ))}
+        </Styled.Buttons>
+        <Styled.Footer>
         {instruments.map((item) => (
           <Styled.InstrumentButton
             key={item}
@@ -230,49 +248,14 @@ export default function Tuner() {
             {item}
           </Styled.InstrumentButton>
         ))}
-        <Styled.InstrumentButton onClick={() => navigate("/metronomo")}>
-          Metrônomo
-        </Styled.InstrumentButton>
-      </Styled.ResponsiveSidebar>
-
-      <Styled.Container>
-        <Styled.Logo src="/logo.png" alt="Mandicuera" />
-        <Styled.Title>Afinador de {instrument}</Styled.Title>
-
-        <Styled.NoteDisplay color={getOffsetColor(offset)}>
-          Nota detectada: <strong>{detectedNote || "..."}</strong>
-        </Styled.NoteDisplay>
-
-        <Styled.OffsetBar>
-          <Styled.Indicator style={{ left: `${offset + 50}%`, backgroundColor: getOffsetColor(offset) }} />
-          <Styled.CenterLine />
-        </Styled.OffsetBar>
-
-        <Styled.Buttons>
-          {instrumentNotesMap[instrument].map((note, idx) => (
-            <Styled.NoteButton key={`${instrument}-${note.name}-${idx}`} onClick={() => playNote(note)}>
-              {note.name}
-            </Styled.NoteButton>
-          ))}
-        </Styled.Buttons>
+      </Styled.Footer>
       </Styled.Container>
-    </Styled.Page>
+
+    </MainLayout>
   );
 }
 
 const Styled = {
-  Page: styled.div`
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    background: ${({ theme }) => theme.colors.background};
-    font-family: Arial, sans-serif;
-
-    @media (max-width: 768px) {
-        flex-direction: column;
-    }
-  `,
-
   CenterLine: styled.div`
     position: absolute;
     top: 0;
@@ -281,54 +264,6 @@ const Styled = {
     width: 2px;
     height: 100%;
     background: ${({ theme }) => theme.colors.text};
-  `,
-
-  ResponsiveSidebar: styled.div`
-    width: 200px;
-    background: ${({ theme }) => theme.colors.primaryDarkTwo};
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    @media (max-width: 768px) {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        padding: 10px;
-    }
-  `,
-
-  InstrumentButton: styled.button.attrs(() => ({}))`
-    background: ${({ $active, theme }) =>
-        $active ? theme.colors.primary : theme.colors.primaryDark};
-    color: ${({ theme }) => theme.colors.text};
-    border: none;
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-
-    &:hover {
-        background: ${({ theme }) => theme.colors.primary};
-    }
-
-    @media (max-width: 768px) {
-        font-size: 0.9rem;
-        padding: 8px 12px;
-    }
-  `,
-
-  Logo: styled.img`
-    height: 180px;
-
-    @media (max-width: 768px) {
-        order: 99;
-        margin-left: 0;
-        margin-top: 10px;
-    }
   `,
 
   Container: styled.div`
@@ -346,7 +281,7 @@ const Styled = {
 
   Title: styled.h1`
       font-size: 2rem;
-      color: ${({ theme }) => theme.colors.text};
+      color: ${({ theme }) => theme.colors.primaryDark};
       margin-bottom: 20px;
       text-align: center;
   `,
@@ -354,7 +289,7 @@ const Styled = {
   NoteDisplay: styled.div`
       font-size: 1.5rem;
       margin-bottom: 20px;
-      color: ${({ theme }) => theme.colors.text};
+      color: ${({ theme }) => theme.colors.primaryDark};
       text-align: center;
   `,
 
@@ -407,5 +342,46 @@ const Styled = {
       flex: 1 1 80px;
       max-width: 100px;
     }
-  `
+  `,
+
+  Footer: styled.div`
+    position: fixed;
+    bottom: 0;
+    left: 240px;
+    width: calc(100% - 240px);
+    background: ${({ theme }) => theme.colors.primaryDarkTwo};
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 20px;
+    z-index: 1000;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+
+    @media (max-width: 768px) {
+      left: 0;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+  `,
+
+  InstrumentButton: styled.button`
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.primary : theme.colors.primaryDark};
+    color: ${({ theme }) => theme.colors.text};
+    border: none;
+    padding: 10px 16px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.primary};
+    }
+
+    @media (max-width: 768px) {
+      font-size: 0.9rem;
+      padding: 8px 12px;
+    }
+  `,
 };

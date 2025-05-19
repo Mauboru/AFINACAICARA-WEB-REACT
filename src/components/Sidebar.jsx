@@ -31,7 +31,7 @@ export default function Sidebar({ isOpen, onClose }) {
       <Styled.Overlay onClick={onClose} $isOpen={isOpen} $bgColor={theme.primary} />
       <Styled.SidebarContainer $isOpen={isOpen}>
         <Styled.LogoWrapper>
-          <a href="/home">
+          <a href="/">
             <img src={LogoImage} alt="Logo" />
           </a>
         </Styled.LogoWrapper>
