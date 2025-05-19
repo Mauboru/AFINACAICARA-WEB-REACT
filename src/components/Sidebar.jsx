@@ -1,9 +1,9 @@
 import { useLocation, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import LogoImage from "/logomarca.png";
-import { useState, useEffect } from "react";
-import { getMenuByRole } from "../utils/menu";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
+import menu from '../utils/menu'
 
 export default function Sidebar({ isOpen, onClose }) {
   const theme = useTheme();
@@ -13,12 +13,8 @@ export default function Sidebar({ isOpen, onClose }) {
   const currentPath = location.pathname;
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userData"));
-    const role = user.role;
-    const filteredMenu = getMenuByRole(role);
-    setMenuItems(filteredMenu);
-
-    const activeMenu = filteredMenu.find(item =>
+    setMenuItems(menu);
+    const activeMenu = menu.find(item =>
       item.subItems?.some(sub => sub.path === currentPath)
     );
     if (activeMenu) {
@@ -40,46 +36,52 @@ export default function Sidebar({ isOpen, onClose }) {
           </a>
         </Styled.LogoWrapper>
         <ul>
-          {
-            menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.path}>
-                  <Styled.NavItem
-                    selected={currentPath.startsWith(item.path)}
-                    onClick={() => item.subItems ? toggleMenu(item.path) : null}
-                  >
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isSelected = currentPath.startsWith(item.path);
+
+            return (
+              <div key={item.path}>
+                {item.subItems ? (
+                  <Styled.NavItem selected={isSelected} onClick={() => toggleMenu(item.path)}>
                     <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ display: "flex", alignItems: "center" }}>
                         {Icon && <Icon style={{ marginRight: 8 }} />}
                         {item.label}
                       </span>
-                      {item.subItems && (
-                        expandedMenu === item.path ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />
-                      )}
+                      {expandedMenu === item.path ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
                     </span>
                   </Styled.NavItem>
+                ) : (
+                  <Link
+                    to={item.path}
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <Styled.NavItem selected={isSelected}>
+                      <span style={{ display: "flex", alignItems: "center" }}>
+                        {Icon && <Icon style={{ marginRight: 8 }} />}
+                        {item.label}
+                      </span>
+                    </Styled.NavItem>
+                  </Link>
+                )}
 
-                  {item.subItems && expandedMenu === item.path && (
-                    item.subItems.map((sub) => {
-                      const SubIcon = sub.icon;
-                      return (
-                        <Styled.SubItem
-                          key={sub.path}
-                          selected={currentPath === sub.path}
-                        >
-                          <Link to={sub.path}>
-                            {SubIcon && <SubIcon style={{ marginRight: 8 }} />}
-                            {sub.label}
-                          </Link>
-                        </Styled.SubItem>
-                      );
-                    })
-                  )}
-                </div>
-              );
-            })
-          }
+                {item.subItems && expandedMenu === item.path && (
+                  item.subItems.map((sub) => {
+                    const SubIcon = sub.icon;
+                    return (
+                      <Styled.SubItem key={sub.path} selected={currentPath === sub.path}>
+                        <Link to={sub.path}>
+                          {SubIcon && <SubIcon style={{ marginRight: 8 }} />}
+                          {sub.label}
+                        </Link>
+                      </Styled.SubItem>
+                    );
+                  })
+                )}
+              </div>
+            );
+          })}
         </ul>
         <Styled.Footer>
           <p>Realização:</p>
@@ -148,36 +150,13 @@ const Styled = {
     margin: 1rem 0;
     font-weight: bold;
     border-radius: 8px;
-    background-color: ${({ selected, theme }) => selected ? theme.primary : "transparent"};
+    background-color: ${({ selected, theme }) => selected ? theme.colors.primary : "transparent"};
     padding: 0.5rem 1rem;
     transition: background-color 0.2s;
     cursor: pointer;
 
     &:hover {
       background-color: ${({ selected }) => !selected && "#1a1a1a"};
-    }
-  `,
-
-  SubItem: styled.div`
-    margin-left: 1rem;
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    background-color: ${({ selected, theme }) => selected ? theme.primary : "transparent"};
-    color: ${({ selected, theme }) => (selected ? theme.colors.primary : "#fff")};
-    cursor: pointer;
-    transition: background-color 0.2s;
-
-    a {
-      color: inherit;
-      text-decoration: none;
-      display: block;
-    }
-
-    &:hover {
-      background-color: #1a1a1a;
-      color: #fff;
     }
   `,
 
