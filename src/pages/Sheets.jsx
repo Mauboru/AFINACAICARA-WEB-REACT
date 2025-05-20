@@ -1,10 +1,12 @@
 import styled from "styled-components";
 import MainLayout from '../layouts/MainLayout';
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom'
 
 export default function Sheets() {
   const [musicList, setMusicList] = useState([]);
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const musics = [
       { id: 1, title: "Feliz" },
@@ -30,10 +32,6 @@ export default function Sheets() {
 
   const sortedLetters = Object.keys(groupedMusics).sort();
 
-  const handleClick = (title) => {
-    alert(`Você clicou na música: ${title}`);
-  };
-
   return (
     <MainLayout>
       <Styled.Container>
@@ -45,10 +43,9 @@ export default function Sheets() {
               {groupedMusics[letter].map(music => (
                 <Styled.Musics
                   key={music.id}
-                  onClick={() => handleClick(music.title)}
+                  onClick={() => navigate(`/musicas/${music.id}`)}
                   tabIndex={0}
                   role="button"
-                  onKeyDown={(e) => e.key === 'Enter' && handleClick(music.title)}
                 >
                   {music.title}
                 </Styled.Musics>

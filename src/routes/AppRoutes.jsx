@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Tuner from "../pages/Tuner";
 import Metronomo from "../pages/Metronomo";
 import Sheets from "../pages/Sheets";
+import Music from "../pages/Music";
 
 export default function AppRoutes() {
     return (
@@ -12,6 +13,7 @@ export default function AppRoutes() {
                 <Route path="/afinador" element={<Tuner />} />
                 <Route path="/metronomo" element={<Metronomo />} />
                 <Route path="/musicas" element={<Sheets />} />
+                <Route path="/musicas/:id" element={<Music />} />
             </Routes>
         </Router>
     );

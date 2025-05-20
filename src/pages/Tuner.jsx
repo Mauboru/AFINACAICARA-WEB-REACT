@@ -73,10 +73,6 @@ export default function Tuner() {
     };
   };
 
-  const noteNameToIndex = (noteName) => {
-    return chromaticNotes.indexOf(noteName);
-  };
-
   const formatNoteName = (noteName) => {
     return noteName;
   };
@@ -209,61 +205,100 @@ export default function Tuner() {
     playTone(note.freq, 1); 
   };
 
-  const getOffsetColor = (offset) => {
-    const absOffset = Math.abs(offset);
-    if (absOffset <= 5) return "#2ecc71";
-    if (absOffset <= 15) return "#f1c40f";
-    return "#e74c3c";
-  };
-
   return (
     <MainLayout>
+      <Styled.Container>
+        <Styled.Title>Afinador de {instrument}</Styled.Title>
 
-        <Styled.Container>
-          <Styled.Title>Afinador de {instrument}</Styled.Title>
+        <Styled.TunerDisplay>
+          <Styled.Needle offset={offset} />
+          <Styled.Scale>
+            <span>-50</span>
+            <span>-25</span>
+            <span>0</span>
+            <span>+25</span>
+            <span>+50</span>
+          </Styled.Scale>
+        </Styled.TunerDisplay>
 
-          <Styled.NoteDisplay color={getOffsetColor(offset)}>
-            Nota detectada: <strong>{detectedNote || "..."}</strong>
-          </Styled.NoteDisplay>
+        <Styled.NoteBig>{detectedNote || "A"}</Styled.NoteBig>
 
-          <Styled.OffsetBar>
-            <Styled.Indicator style={{ left: `${offset + 50}%`, backgroundColor: getOffsetColor(offset) }} />
-            <Styled.CenterLine />
-          </Styled.OffsetBar>
+        <Styled.FrequencySmall>
+          {detectedFreq ? `${detectedFreq.toFixed(1)} Hz | ${offset.toFixed(1)} cents` : "00.0 Hz | 00.0 cents"}
+        </Styled.FrequencySmall>
 
-          <Styled.Buttons>
-            {instrumentNotesMap[instrument].map((note, idx) => (
-              <Styled.NoteButton key={`${instrument}-${note.name}-${idx}`} onClick={() => playNote(note)}>
-                {note.name}
-              </Styled.NoteButton>
-            ))}
+        <Styled.Buttons>
+          {instrumentNotesMap[instrument].map((note, idx) => (
+            <Styled.NoteButton key={`${instrument}-${note.name}-${idx}`} onClick={() => playNote(note)}>
+              {note.name}
+            </Styled.NoteButton>
+          ))}
         </Styled.Buttons>
-        <Styled.Footer>
-        {instruments.map((item) => (
-          <Styled.InstrumentButton
-            key={item}
-            onClick={() => setInstrument(item)}
-            $active={instrument === item}
-          >
-            {item}
-          </Styled.InstrumentButton>
-        ))}
-      </Styled.Footer>
-      </Styled.Container>
 
+        <Styled.Footer>
+          {instruments.map((item) => (
+            <Styled.InstrumentButton
+              key={item}
+              onClick={() => setInstrument(item)}
+              $active={instrument === item}
+            >
+              {item}
+            </Styled.InstrumentButton>
+          ))}
+        </Styled.Footer>
+    
+      </Styled.Container>
     </MainLayout>
   );
 }
 
 const Styled = {
-  CenterLine: styled.div`
+  TunerDisplay: styled.div`
+    position: relative;
+    width: 200px;
+    height: 100px;
+    margin: 40px auto;
+    border-top-left-radius: 200px;
+    border-top-right-radius: 200px;
+    background: #222;
+    border: 2px solid #555;
+  `,
+
+  Needle: styled.div`
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 50%;
-    transform: translateX(-50%);
     width: 2px;
-    height: 100%;
-    background: ${({ theme }) => theme.colors.text};
+    height: 90px;
+    background: red;
+    transform: rotate(${props => props.offset}deg);
+    transform-origin: bottom center;
+    transition: transform 0.1s ease;
+  `,
+
+  Scale: styled.div`
+    position: absolute;
+    width: 100%;
+    bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    color: #ccc;
+    font-size: 0.75rem;
+  `,
+
+  NoteBig: styled.div`
+    font-size: 3rem;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.primaryDark};
+    text-align: center;
+  `,
+
+  FrequencySmall: styled.div`
+    font-size: 1rem;
+    color: ${({ theme }) => theme.colors.primaryDark};
+    text-align: center;
+    margin-top: 0.5rem;
+    padding-bottom: 2rem;
   `,
 
   Container: styled.div`
@@ -280,36 +315,10 @@ const Styled = {
   `,
 
   Title: styled.h1`
-      font-size: 2rem;
-      color: ${({ theme }) => theme.colors.primaryDark};
-      margin-bottom: 20px;
-      text-align: center;
-  `,
-
-  NoteDisplay: styled.div`
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: ${({ theme }) => theme.colors.primaryDark};
-      text-align: center;
-  `,
-
-  OffsetBar: styled.div`
-    width: 100%;
-    max-width: 400px;
-    height: 10px;
-    background: ${({ theme }) => theme.colors.primaryTransparent2};
-    position: relative;
-    margin-bottom: 30px;
-    border-radius: 5px;
-  `,
-
-  Indicator: styled.div`
-    position: absolute;
-    top: -5px;
-    width: 4px;
-    height: 20px;
-    background: ${({ theme }) => theme.colors.primary};
-    transition: left 0.1s ease;
+    font-size: 2rem;
+    color: ${({ theme }) => theme.colors.primaryDark};
+    margin-bottom: 20px;
+    text-align: center;
   `,
 
   Buttons: styled.div`
