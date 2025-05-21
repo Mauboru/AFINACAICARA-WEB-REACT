@@ -168,10 +168,4 @@ const Styled = {
             text-decoration: none;
         }
     `,
-
-    Title: styled.h2`
-        font-size: 2rem;
-        font-weight: bold;
-        margin: 0;
-    `,
 };

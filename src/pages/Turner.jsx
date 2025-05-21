@@ -1,13 +1,29 @@
 import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import MainLayout from '../layouts/MainLayout';
+import { useTuner } from '../context/TurnerContext';
 
-export default function Tuner() {
+export default function Turner() {
   const chromaticNotes = [
     "C", "C#", "D", "D#", "E", "F",
     "F#", "G", "G#", "A", "A#", "B"
   ];
 
+  const keySemitoneOffsets = {
+    C: 0,
+    "C#": 1,
+    D: 2,
+    "D#": 3,
+    E: 4,
+    F: 5,
+    "F#": 6,
+    G: 7,
+    "G#": 8,
+    A: 9,
+    "A#": 10,
+    B: 11,
+  };
+  
   const instrumentNotesMap = {
     Rabeca: [
       { name: "A", freq: 440.00 },
@@ -41,12 +57,9 @@ export default function Tuner() {
     ]
   };
 
-  const instruments = Object.keys(instrumentNotesMap);
-
   const [detectedNote, setDetectedNote] = useState("");
   const [detectedFreq, setDetectedFreq] = useState(null);
   const [offset, setOffset] = useState(0);
-  const [instrument, setInstrument] = useState("Rabeca");
 
   const audioContextRef = useRef(null);
   const analyserNodeRef = useRef(null);
@@ -73,12 +86,41 @@ export default function Tuner() {
     };
   };
 
-  const formatNoteName = (noteName) => {
-    return noteName;
+  const transposeNotes = (notes, semitones) => {
+    return notes.map(note => {
+      // acha o índice da nota original
+      const originalIndex = chromaticNotes.indexOf(note.name);
+      if (originalIndex === -1) {
+        // caso não encontre, retorna a nota original
+        return { ...note };
+      }
+  
+      // calcula novo índice com transposição
+      const transposedIndex = (originalIndex + semitones + 12) % 12;
+  
+      // pega o nome transposto
+      const transposedName = chromaticNotes[transposedIndex];
+  
+      // calcula frequência transposta
+      const transposedFreq = note.freq * Math.pow(2, semitones / 12);
+  
+      return {
+        name: transposedName,
+        freq: transposedFreq,
+      };
+    });
   };
 
+  const { instrument, note } = useTuner();
+
+  const baseNotes = instrumentNotesMap[instrument] || [];
+  const instrumentKey = note || "D";
+  const semitoneOffset = keySemitoneOffsets[instrumentKey] ?? 0;
+  const notes = transposeNotes(baseNotes, semitoneOffset);
+
+  const formatNoteName = (noteName) => noteName;
+
   const getClosestNote = (freq) => {
-    const notes = instrumentNotesMap[instrument];
     return notes.reduce((prev, curr) =>
       Math.abs(curr.freq - freq) < Math.abs(prev.freq - freq) ? curr : prev
     );
@@ -181,7 +223,8 @@ export default function Tuner() {
           const closest = getClosestNote(pitch);
           const cents = getCentOffset(pitch, closest.freq);
           setDetectedNote(formatNoteName(closest.name));
-          setOffset(Math.max(-50, Math.min(cents, 50)));
+          const degreesOffset = (cents / 50) * 45; 
+          setOffset(Math.max(-45, Math.min(degreesOffset, 45)));
           setDetectedFreq(pitch);
         } else {
           setDetectedNote("");
@@ -196,10 +239,11 @@ export default function Tuner() {
     };
 
     initMic();
+
     return () => {
       audioContextRef.current?.close();
     };
-  }, [instrument]);
+  }, [instrument, note]);
 
   const playNote = (note) => {
     playTone(note.freq, 1); 
@@ -210,7 +254,7 @@ export default function Tuner() {
       <Styled.Container>
         <Styled.Title>Afinador de {instrument}</Styled.Title>
 
-        <Styled.TunerDisplay>
+        <Styled.TurnerDisplay>
           <Styled.Needle offset={offset} />
           <Styled.Scale>
             <span>-50</span>
@@ -219,7 +263,7 @@ export default function Tuner() {
             <span>+25</span>
             <span>+50</span>
           </Styled.Scale>
-        </Styled.TunerDisplay>
+        </Styled.TurnerDisplay>
 
         <Styled.NoteBig>{detectedNote || "A"}</Styled.NoteBig>
 
@@ -228,32 +272,19 @@ export default function Tuner() {
         </Styled.FrequencySmall>
 
         <Styled.Buttons>
-          {instrumentNotesMap[instrument].map((note, idx) => (
+          {notes.map((note, idx) => (
             <Styled.NoteButton key={`${instrument}-${note.name}-${idx}`} onClick={() => playNote(note)}>
               {note.name}
             </Styled.NoteButton>
           ))}
         </Styled.Buttons>
-
-        <Styled.Footer>
-          {instruments.map((item) => (
-            <Styled.InstrumentButton
-              key={item}
-              onClick={() => setInstrument(item)}
-              $active={instrument === item}
-            >
-              {item}
-            </Styled.InstrumentButton>
-          ))}
-        </Styled.Footer>
-    
       </Styled.Container>
     </MainLayout>
   );
 }
 
 const Styled = {
-  TunerDisplay: styled.div`
+  TurnerDisplay: styled.div`
     position: relative;
     width: 200px;
     height: 100px;
@@ -350,47 +381,6 @@ const Styled = {
       font-size: 0.95rem;
       flex: 1 1 80px;
       max-width: 100px;
-    }
-  `,
-
-  Footer: styled.div`
-    position: fixed;
-    bottom: 0;
-    left: 240px;
-    width: calc(100% - 240px);
-    background: ${({ theme }) => theme.colors.primaryDarkTwo};
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px 20px;
-    z-index: 1000;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-
-    @media (max-width: 768px) {
-      left: 0;
-      width: 100%;
-      flex-wrap: wrap;
-    }
-  `,
-
-  InstrumentButton: styled.button`
-    background: ${({ $active, theme }) =>
-      $active ? theme.colors.primary : theme.colors.primaryDark};
-    color: ${({ theme }) => theme.colors.text};
-    border: none;
-    padding: 10px 16px;
-    font-size: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.primary};
-    }
-
-    @media (max-width: 768px) {
-      font-size: 0.9rem;
-      padding: 8px 12px;
     }
   `,
 };
