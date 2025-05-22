@@ -5,17 +5,18 @@ import MainLayout from '../layouts/MainLayout';
 export default function Metronome() {
   const [bpm, setBpm] = useState(100);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [tick, setTick] = useState(false);
+  const [beatIndex, setBeatIndex] = useState(0);
+  const [timeSignature, setTimeSignature] = useState(4);
   const timerRef = useRef(null);
 
-  const playClick = () => {
+  const playClick = (isDownbeat) => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
     oscillator.connect(gain);
     gain.connect(audioCtx.destination);
-    oscillator.frequency.value = 1000;
+    oscillator.frequency.value = isDownbeat ? 1200 : 800;
     gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + 0.05);
@@ -24,19 +25,22 @@ export default function Metronome() {
       audioCtx.close();
     };
   };
-
+  
   const startMetronome = () => {
     const interval = 60000 / bpm;
+    let currentBeat = 0;
+
     timerRef.current = setInterval(() => {
-      playClick();
-      setTick(true);
-      setTimeout(() => setTick(false), 100);
+      const isDownbeat = currentBeat === 0;
+      playClick(isDownbeat);
+      setBeatIndex(currentBeat);
+      currentBeat = (currentBeat + 1) % timeSignature;
     }, interval);
   };
 
   const stopMetronome = () => {
     clearInterval(timerRef.current);
-    setTick(false);
+    setBeatIndex(-1);
   };
 
   const toggleMetronome = () => {
@@ -53,7 +57,7 @@ export default function Metronome() {
       stopMetronome();
       startMetronome();
     }
-  }, [bpm]);
+  }, [bpm, timeSignature]);
 
   useEffect(() => {
     return () => stopMetronome();
@@ -61,27 +65,44 @@ export default function Metronome() {
 
   return (
     <MainLayout>
-        <Styled.Container>
-          <Styled.Title>Metrônomo</Styled.Title>
+      <Styled.Container>
+        <Styled.Title>Metrônomo</Styled.Title>
 
-          <Styled.TempoDisplay>
-            {bpm} BPM
-          </Styled.TempoDisplay>
+        <Styled.TempoDisplay>{bpm} BPM</Styled.TempoDisplay>
 
-          <Styled.Slider
-            type="range"
-            min="40"
-            max="240"
-            value={bpm}
-            onChange={(e) => setBpm(Number(e.target.value))}
-          />
+        <Styled.Slider
+          type="range"
+          min="40"
+          max="240"
+          value={bpm}
+          onChange={(e) => setBpm(Number(e.target.value))}
+        />
 
-          <Styled.PlayButton onClick={toggleMetronome}>
-            {isPlaying ? "Parar" : "Iniciar"}
-          </Styled.PlayButton>
+        <Styled.TimeSignatureSelect
+          value={timeSignature}
+          onChange={(e) => setTimeSignature(Number(e.target.value))}
+        >
+          {[1, 2, 3, 4, 5, 6].map(num => (
+            <option key={num} value={num}>
+              {num}/4
+            </option>
+          ))}
+        </Styled.TimeSignatureSelect>
 
-          <Styled.VisualBeat $active={tick} />
-        </Styled.Container>
+        <Styled.PlayButton onClick={toggleMetronome}>
+          {isPlaying ? "Parar" : "Iniciar"}
+        </Styled.PlayButton>
+
+        <Styled.BeatContainer>
+          {[...Array(timeSignature)].map((_, idx) => (
+            <Styled.BeatCircle
+              key={idx}
+              $active={isPlaying && beatIndex === idx}
+              $isDownbeat={idx === 0}
+            />
+          ))}
+        </Styled.BeatContainer>
+      </Styled.Container>
     </MainLayout>
   );
 }
@@ -118,6 +139,16 @@ const Styled = {
     max-width: 80%;
   `,
 
+  TimeSignatureSelect: styled.select`
+    margin-top: 10px;
+    padding: 6px 12px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: ${({ theme }) => theme.colors.background || '#fff'};
+    color: ${({ theme }) => theme.colors.text || '#000'};
+  `,
+
   PlayButton: styled.button`
     background: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.text};
@@ -132,11 +163,25 @@ const Styled = {
     }
   `,
 
-  VisualBeat: styled.div`
+  BeatContainer: styled.div`
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+  `,
+
+  BeatCircle: styled.div`
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: ${({ $active, theme }) => $active ? theme.colors.primary : theme.colors.primaryDark};
+    background: ${({ $active, $isDownbeat, theme }) =>
+      $active
+        ? $isDownbeat
+          ? theme.colors.primaryDark
+          : theme.colors.primary
+        : $isDownbeat
+        ? theme.colors.primary
+        : theme.colors.primaryDark};
+    border: ${({ $isDownbeat }) => ($isDownbeat ? "2px solid black" : "none")};
     transition: background 0.1s;
-  `
+  `,
 };
