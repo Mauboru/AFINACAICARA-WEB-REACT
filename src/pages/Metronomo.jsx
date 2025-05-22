@@ -68,7 +68,7 @@ export default function Metronome() {
       <Styled.Container>
         <Styled.Title>Metrônomo</Styled.Title>
 
-        <Styled.TempoDisplay>{bpm} BPM</Styled.TempoDisplay>
+        <Styled.TempoDisplay>{bpm} BPSM</Styled.TempoDisplay>
 
         <Styled.Slider
           type="range"
