@@ -4,26 +4,8 @@ import MainLayout from '../layouts/MainLayout';
 import { useTuner } from '../context/TurnerContext';
 
 export default function Turner() {
-  const chromaticNotes = [
-    "C", "C#", "D", "D#", "E", "F",
-    "F#", "G", "G#", "A", "A#", "B"
-  ];
-
-  const keySemitoneOffsets = {
-    C: 0,
-    "C#": 1,
-    D: 2,
-    "D#": 3,
-    E: 4,
-    F: 5,
-    "F#": 6,
-    G: 7,
-    "G#": 8,
-    A: 9,
-    "A#": 10,
-    B: 11,
-  };
-  
+  const chromaticNotes = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" ];
+  const keySemitoneOffsets = { C: 0, "C#": 1, D: 2, "D#": 3, E: 4, F: 5, "F#": 6, G: 7, "G#": 8, A: 9, "A#": 10, B: 11 };
   const instrumentNotesMap = {
     Rabeca: [
       { name: "A", freq: 440.00 },
@@ -56,15 +38,17 @@ export default function Turner() {
       { name: "E", freq: 659.26 }
     ]
   };
-
+  const instrumentReferenceNote = { Rabeca: "A", Violino: "G", Machete: "B", Viola: "A", "Meia-Viola": "A" };
+  
   const [detectedNote, setDetectedNote] = useState("");
   const [detectedFreq, setDetectedFreq] = useState(null);
   const [offset, setOffset] = useState(0);
-
   const audioContextRef = useRef(null);
   const analyserNodeRef = useRef(null);
   const dataArrayRef = useRef(null);
   const sourceRef = useRef(null);
+
+  const formatNoteName = (noteName) => noteName;
 
   const playTone = (freq, duration = 1) => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -88,37 +72,25 @@ export default function Turner() {
 
   const transposeNotes = (notes, semitones) => {
     return notes.map(note => {
-      // acha o índice da nota original
       const originalIndex = chromaticNotes.indexOf(note.name);
       if (originalIndex === -1) {
-        // caso não encontre, retorna a nota original
         return { ...note };
       }
-  
-      // calcula novo índice com transposição
       const transposedIndex = (originalIndex + semitones + 12) % 12;
-  
-      // pega o nome transposto
       const transposedName = chromaticNotes[transposedIndex];
-  
-      // calcula frequência transposta
       const transposedFreq = note.freq * Math.pow(2, semitones / 12);
-  
       return {
         name: transposedName,
         freq: transposedFreq,
       };
     });
   };
-
+  
   const { instrument, note } = useTuner();
-
   const baseNotes = instrumentNotesMap[instrument] || [];
-  const instrumentKey = note || "D";
-  const semitoneOffset = keySemitoneOffsets[instrumentKey] ?? 0;
-  const notes = transposeNotes(baseNotes, semitoneOffset);
-
-  const formatNoteName = (noteName) => noteName;
+  const referenceNote = instrumentReferenceNote[instrument] || baseNotes[2]?.name || "A";
+  const semitones = keySemitoneOffsets[note] - keySemitoneOffsets[referenceNote];
+  const notes = transposeNotes(baseNotes, semitones);
 
   const getClosestNote = (freq) => {
     return notes.reduce((prev, curr) =>
@@ -198,6 +170,10 @@ export default function Turner() {
     return smoothed;
   };
 
+  const playNote = (note) => {
+    playTone(note.freq, 1); 
+  };
+
   useEffect(() => {
     const initMic = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -231,10 +207,8 @@ export default function Turner() {
           setOffset(0);
           setDetectedFreq(null);
         }
-
         requestAnimationFrame(process);
       };
-
       process();
     };
 
@@ -244,10 +218,6 @@ export default function Turner() {
       audioContextRef.current?.close();
     };
   }, [instrument, note]);
-
-  const playNote = (note) => {
-    playTone(note.freq, 1); 
-  };
 
   return (
     <MainLayout>
