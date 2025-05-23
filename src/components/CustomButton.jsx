@@ -1,9 +1,9 @@
 import styled, { keyframes } from "styled-components";
 import { FaSpinner } from "react-icons/fa";
 
-export default function CustomButton({ children, loading, ...props }) {
+export default function CustomButton({ children, loading, variant = "button", ...props }) {
   return (
-    <Button {...props} disabled={loading || props.disabled}>
+    <Button variant={variant} {...props} disabled={loading || props.disabled}>
       {loading ? (
         <>
           <SpinnerIcon />
@@ -21,12 +21,11 @@ const spin = keyframes`
 `;
 
 const Button = styled.button`
-  background-color: ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme, variant }) => theme.colors[variant]};
   color: #FFF;
   border: none;
-  padding: 0.75rem;
-  border-radius: 4px;
-  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
   font-weight: bold;
   transition: background-color 0.3s ease;
   cursor: pointer;
@@ -36,14 +35,15 @@ const Button = styled.button`
   gap: 8px;
   margin-top: 10px;
   margin-bottom: 10px;
-
+  width: fit-content;
+  align-self: center;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
+    background-color: ${({ theme, variant }) => theme.colors[`${variant}Dark`] || theme.colors[variant]};
   }
 
   &:disabled {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
+    background-color: ${({ theme, variant }) => theme.colors[`${variant}Dark`] || theme.colors[variant]};
     cursor: not-allowed;
     opacity: 0.6;
   }

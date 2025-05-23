@@ -1,0 +1,8 @@
+1;Feliz;Batido;Mandicuera
+2;Marinheiro;Batido;Mandicuera
+3;Queromana;Batido;Mandicuera
+4;No Jardim;Chamarrita;Mandicuera
+5;Peixe Morto;Dom-Dom;Mandicuera
+6;Menina você ta lembrada;Chamarrita;Manema
+7;Menina do cabelo comprido;Dom-Dom;Manema
+8;Tamanduá no Baile;Dom-Dom;Mandicuera
