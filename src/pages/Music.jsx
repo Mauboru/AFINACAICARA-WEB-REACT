@@ -10,65 +10,41 @@ export default function Music() {
     const { id } = useParams();
 
     useEffect(() => {
-        const musics = [
-            { id: 1, title: "Feliz", author: "João Silva", album: "Alegria", year: 2015, band: "Os Bons", letter: "Feliz é quem canta com o coração,\nVive a vida com emoção..." },
-            { id: 2, title: "Marinheiro", author: "Lucas Rocha", album: "Águas", year: 2018, band: "Maré Alta", letter: "O marinheiro saiu no mar,\nCom saudade no olhar..." },
-            { id: 3, title: "Queromana", author: "Ana Reis", album: "Desejos", year: 2017, band: "Flor do Cerrado", letter: "Queromana dança no vento,\nLeve feito pensamento..." },
-            { id: 4, title: "No Jardim", author: "Carlos Luz", album: "Natureza", year: 2016, band: "Raízes", letter: "No jardim da esperança,\nPlantei o meu amor..." },
-            { id: 5, title: "Peixe Morto", author: "Marina Costa", album: "Profundezas", year: 2019, band: "Oceano Seco", letter: "O peixe morto não nada,\nMas sua história ainda fala..." },
-            {
-                id: 6,
-                title: "Menina você tá lembrada",
-                author: "Desconhecido",
-                album: "Chamarritas Gaúchas",
-                year: 2023,
-                band: "Grupo Manema",
-                spotify: "https://open.spotify.com/track/abc123",
-                youtube: "https://youtube.com/watch?v=abc123",
-                soundcloud: "",
-                letter: `
-            Ai no meio desse salão
-            Ai ??? o bateu asa
-            
-            Menina você tá lembrada
-            Ai daquela tarde serena
-            Que eu passei no seu ranchinho
-            Como que vai, cumprimentei
-            Todo bonzinho, minha donzela, meu amorzinho
-            
-            Aí nós temos obrigação
-            Pra saudar o dono da casa
-            
-            (REFRÃO)
-
-            Ai capinzinho do terreiro
-            Ai não contei que há de vim
-            
-            (REFRÃO)
-
-            Ai não quero que meu bem saiba
-            Aí nova noite se admira
-            
-            (REFRÃO)
-
-            Ai meu amigo e camarada
-            Ai vamo dar por despedida
-            
-            (REFRÃO)
-
-            Ai no meu bairro não se usa
-            Ai vem fazer moda cumprida`
-            },            
-            { id: 7, title: "Menina do cabelo comprido", author: "Patrícia Moraes", album: "Sonhos", year: 2021, band: "Horizonte Azul", letter: "Menina do cabelo comprido,\nTeu riso é o meu abrigo..." },
-            { id: 8, title: "Tamanduá no Baile", author: "Rafael Souza", album: "Selva Urbana", year: 2022, band: "Bicho Solto", letter: "Tamanduá no baile chegou,\nTodo mundo se espantou..." },
-        ];
-
-        musics.sort((a, b) => a.title.localeCompare(b.title));
-        setMusicList(musics);
-
-        const found = musics.find((m) => m.id === Number(id));
-        setMusic(found);
-    }, [id]);
+        fetch('/musics.txt')
+          .then(res => res.text())
+          .then(text => {
+            const lines = text.trim().split('\n');
+            const musics = lines.map(line => {
+              const parts = line.split(';');
+      
+              return {
+                id: Number(parts[0]),
+                title: parts[1],
+                style: parts[2],
+                group: parts[3],
+                author: parts[4],
+                album: parts[5],
+                year: Number(parts[6]),
+                band: parts[7],
+                spotify: parts[8] || '',
+                youtube: parts[9] || '',
+                soundcloud: parts[10] || '',
+                letter: parts.slice(11).join(';') || '',
+              };
+            });
+      
+            musics.sort((a, b) => a.title.localeCompare(b.title));
+            setMusicList(musics);
+      
+            const found = musics.find((m) => m.id === Number(id));
+            setMusic(found);
+          })
+          .catch(() => {
+            setMusicList([]);
+            setMusic(null);
+          });
+      }, [id]);
+      
 
     return (
         <MainLayout>
@@ -97,8 +73,8 @@ export default function Music() {
                     <Styled.Info><strong>Autor:</strong> {music.author}</Styled.Info>
                     <Styled.Info><strong>Álbum:</strong> {music.album}</Styled.Info>
                     <Styled.Info><strong>Ano:</strong> {music.year}</Styled.Info>
-                    <Styled.Info><strong>Banda:</strong> {music.band}</Styled.Info>
-                    <Styled.Lyrics>{music.letter}</Styled.Lyrics>
+                    <Styled.Info><strong>Grupo:</strong> {music.band}</Styled.Info>
+                    <Styled.Lyrics>{music.letter.split('\\n').join('\n')}</Styled.Lyrics>
                 </Styled.Container>
             ) : (
                 <Styled.Aviso>Música não encontrada.</Styled.Aviso>
